@@ -14,6 +14,8 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Map;
+
 
 public class AliPayPlugin extends CordovaPlugin {
     private static String TAG = "AliPayPlugin";
@@ -42,7 +44,24 @@ public class AliPayPlugin extends CordovaPlugin {
             String body = arguments.getString("body");
             String price = arguments.getString("price");
             String notifyUrl = arguments.getString("notifyUrl");
-            this.pay(tradeNo, subject, body, price, notifyUrl, callbackContext);
+//            this.pay(tradeNo, subject, body, price, notifyUrl, callbackContext);
+
+
+            String app_id = arguments.getString("app_id");
+            String rsa2_private = arguments.getString("rsa2_private");
+
+            boolean rsa2 = (rsa2_private.length() > 0);
+            Map<String, String> params = OrderInfoUtil2_0.buildOrderParamMap(app_id, rsa2);
+            String orderParam = OrderInfoUtil2_0.buildOrderParam(params);
+
+            String privateKey = rsa2 ? rsa2_private : "";
+            String sign = OrderInfoUtil2_0.getSign(params, privateKey, rsa2);
+
+            if (sign.length() > 0) {
+                callbackContext.success(sign);
+            } else {
+                callbackContext.error(1);
+            }
         } catch (JSONException e) {
             callbackContext.error(new JSONObject());
             e.printStackTrace();
@@ -51,7 +70,7 @@ public class AliPayPlugin extends CordovaPlugin {
         return true;
     }
 
-    public void pay(String tradeNo, String subject, String body, String price, String notifyUrl, final CallbackContext callbackContext) {
+    /*public void pay(String tradeNo, String subject, String body, String price, String notifyUrl, final CallbackContext callbackContext) {
         // 订单
         String orderInfo = createRequestParameters(subject, body, price, tradeNo, notifyUrl);
 
@@ -91,9 +110,9 @@ public class AliPayPlugin extends CordovaPlugin {
         });
     }
 
-    /**
+    *//**
      * create the order info. 创建订单信息
-     */
+     *//*
     public String createRequestParameters(String subject, String body, String price, String tradeNo, String notifyUrl) {
         // 签约合作者身份ID
         String orderInfo = "partner=" + "\"" + partner + "\"";
@@ -145,20 +164,20 @@ public class AliPayPlugin extends CordovaPlugin {
         return orderInfo;
     }
 
-    /**
+    *//**
      * sign the order info. 对订单信息进行签名
      *
      * @param content 待签名订单信息
-     */
+     *//*
     public String sign(String content) {
         return SignUtils.sign(content, privateKey);
     }
 
-    /**
+    *//**
      * get the sign type we use. 获取签名方式
-     */
+     *//*
     public String getSignType() {
         return "sign_type=\"RSA\"";
-    }
+    }*/
 
 }
